@@ -1,65 +1,73 @@
 package variant17;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 
 import java.util.ArrayList;
 
 
+
 import static java.lang.Math.abs;
-import static java.lang.String.valueOf;
+
 
 /**
  * Created by KuzinAM on 01.03.17.
  */
 public class Double_number {
-    ArrayList<Integer> arr =new ArrayList<>();
-    private String arr2 = new String();
+    ArrayList<Integer> arr_int = new ArrayList<>();
+    ArrayList<Integer> arr_dob = new ArrayList<>();
+    String sign;
 
     public Double_number(String y) {
-        arr2 = y;
-        ArrayList<Integer> arr = new ArrayList<>();
-        try {
-            Double d = new Double(y);
-        } catch (NumberFormatException e) {
-            System.err.println(" Неверный формат строки! ");
-        }
+        ArrayList<Integer> arr_int = new ArrayList<>();
+        ArrayList<Integer> arr_dob = new ArrayList<>();
+        ArrayList<Character> help_get_index = new ArrayList<>();
+        String sign = "";
         char[] chars = y.toCharArray();
-        if (chars[0] == '-') {
-            arr.add(0, -1);
-        } else {
-            arr.add(0, 1);
+        for (char element : chars) {
+            help_get_index.add(element);
         }
-
+        int index = help_get_index.indexOf('.');
         for (int i = 0; i < chars.length; i++) {
-
-            if (chars[i] == '.') {
-                arr.add(10);
-            } else {
+            //проверка формата строки (на единственную запятую и наличие исключительно цифр в строке)
+            try {
+                if (i != index) {
+                    int elem = Character.getNumericValue(chars[i]);
+                }
+            } catch (NumberFormatException e) {
+                System.err.println(" Неверный формат строки! ");
+            }
+            //устанавливается значения знака
+            if (chars[0] == '-') {
+                sign = "-";
+                help_get_index.remove(0);
+            }
+            //в массив целой части и массив дробной заносятся цифры
+            if (i < index && i >= 0) {
                 int intarr = Character.getNumericValue(chars[i]);
-                arr.add(intarr);
+                arr_int.add(intarr);
+            }
+            if (i > index) {
+                int intarr = Character.getNumericValue(chars[i]);
+                arr_dob.add(intarr);
             }
         }
-        if (chars[0] == '-') {
-            arr.remove(1);
-        }
-
-// System.out.print(arr);
-        this.arr = arr;
+        this.arr_dob = arr_dob;
+        this.arr_int = arr_int;
+        this.sign = sign;
     }
 
-    public Double_number fromInt(int d) {
+    public static Double_number fromInt(int d) {
         return new Double_number(Integer.toString(d));
     }
 
-    public Double_number fromLong(long d) {
+    public static Double_number fromLong(long d) {
         return new Double_number(Long.toString(d));
     }
 
-    public Double_number fromFloat(float d) {
+    public static Double_number fromFloat(float d) {
         return new Double_number(Float.toString(d));
     }
 
-    public Double_number fromDouble(double d) {
+    public static Double_number fromDouble(double d) {
         return new Double_number(Double.toString(d));
     }
 
@@ -70,349 +78,315 @@ public class Double_number {
 
         Double_number that = (Double_number) o;
 
-        return arr != null ? arr.equals(that.arr) : that.arr == null;
+        if (arr_int != null ? !arr_int.equals(that.arr_int) : that.arr_int != null) return false;
+        if (arr_dob != null ? !arr_dob.equals(that.arr_dob) : that.arr_dob != null) return false;
+        return sign != null ? sign.equals(that.sign) : that.sign == null;
     }
 
     @Override
     public int hashCode() {
-        return arr != null ? arr.hashCode() : 0;
-    }
-
-    public ArrayList<Integer> count(Double_number x) {
-        ArrayList<Integer> c = new ArrayList<>();
-        c.add(x.arr.size() - x.arr.indexOf(10) - 1);
-        c.add(x.arr.size() - c.get(0) - 2);
-        return c;
+        int result = arr_int != null ? arr_int.hashCode() : 0;
+        result = 31 * result + (arr_dob != null ? arr_dob.hashCode() : 0);
+        result = 31 * result + (sign != null ? sign.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        String x = "";
-// System.out.print(arr);
-        if (arr.get(0) == -1) {
-            x += "-";
+        String sSign = "";
+        if (sign == "") {
+            sSign = " + ";
         }
-        for (int i = 1; i < arr.size(); i++) {
-            if (arr.get(i) != 10) x += arr.get(i);
-            else x += ".";
-        }
-        return "Число = " + x +
-                ", кол-во знаков в целой части = " + count(this).get(1) +
-                ", кол-во знаков в дробной части = " + count(this).get(0);
+        return "Double_number{" +
+                "arr_int=" + arr_int +
+                ", arr_dob=" + arr_dob +
+                ", sign=" + sSign +
+                '}';
     }
 
 
-    public void format(Double_number x1, Double_number x2) {
-        int index1 = x1.arr.indexOf((Integer) 10);
-        int index2 = x2.arr.indexOf((Integer) 10);
-        while (index1 < index2) {
-            x1.arr.add(1, 0);
-            index1++;
-        }
-        while (index2 < index1) {
-            x2.arr.add(1, 0);
-            index2++;
-        }
-        index1 = x1.arr.indexOf(10);
-        index2 = x2.arr.indexOf(10);
+    //функция для установления одинаковой длины массивов двух чисел (для арифметических операций)
+    private void format_for_equal_length(Double_number x1, Double_number x2) {
+        while (x1.arr_int.size() < x2.arr_int.size()) {
+            x1.arr_int.add(0, 0);
 
-        while (x1.arr.size() - index1 > x2.arr.size() - index2) {
-            x2.arr.add(0);
         }
-        while (x2.arr.size() - index2 > x1.arr.size() - index1) {
-            x2.arr.add(0);
+        while (x2.arr_int.size() < x1.arr_int.size()) {
+            x2.arr_int.add(0, 0);
+        }
+        while (x1.arr_dob.size() < x2.arr_dob.size()) {
+            x1.arr_dob.add(0, 0);
+        }
+        while (x2.arr_dob.size() < x1.arr_dob.size()) {
+            x2.arr_dob.add(0, 0);
         }
     }
 
-    private boolean isComma(int code) {
-        return code == 10;
-    }
+    public Double_number multi(Double_number x2) {
+        format_for_equal_length(this, x2);
+        int length = this.arr_dob.size() + x2.arr_dob.size();
+        String res_sign = "";
+        if (((x2.sign == "-") && (this.sign != "-")) || ((x2.sign != "-") && (this.sign == "-"))) {
+            res_sign += "-";
+        }
+        double tempNumbers = 0;
+        ArrayList<Integer> n1 = new ArrayList<>();
+        ArrayList<Integer> n2 = new ArrayList<>();
+        n1.addAll(this.arr_int);
+        n1.addAll(this.arr_dob);
+        n2.addAll(x2.arr_int);
+        n2.addAll(x2.arr_dob);
 
-
-    private ArrayList formInt(int i, int q) {
-        String numbers = Integer.toString(i);
-        ArrayList<Integer> result = new ArrayList<>();
-        for (int j = 0; j < numbers.length(); j++) {
-            result.add(0, (Integer.parseInt("" + numbers.charAt(j))));
-        }
-        while (result.size() < q) {
-            result.add(0, 0);
-        }
-        return result;
-    }
-
-    public String multi(Double_number x2) {
-        int z_res = this.arr.get(0) * x2.arr.get(0);
-        format(this, x2);
-        if (this.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
-        }
-        for (int i = 1; i < this.arr.size(); i++) {
-            if (this.arr.get(i) != 10) {
-                System.out.print(this.arr.get(i));
-            } else {
-                System.out.print(".");
-            }
-        }
-        System.out.println("");
-        System.out.println("*");
-        if (x2.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
-        }
-        for (int i = 1; i < x2.arr.size(); i++) {
-            if (x2.arr.get(i) != 10) {
-                System.out.print(x2.arr.get(i));
-            } else {
-                System.out.print(".");
-            }
-        }
-        System.out.println("");
-        for (Integer element : x2.arr) {
-            System.out.print("_");
-        }
-
-        ArrayList<Double> tempNumbers = new ArrayList<>();
-        double tens = 1;
-        double count = 0;
-        int currentNumber;
-        int n;
-        int head = 0;
-        int rest;
-        for (int i = x2.arr.size() - 1; i > 0; i--) {
-            if (x2.arr.get(i) != 10) {
-                currentNumber = x2.arr.get(i);
-                String intermediateNumber = "";
-                for (int j = this.arr.size() - 1; j > 0; j--) {
-                    if (this.arr.get(j) != 10) {
-                        n = (currentNumber * this.arr.get(j)) + head;
-                        head = 0;
-                        if (n > 9 && j != 1) {
-                            while (n > 9) {
-                                n = n - 10;
-                                head++;
-                            }
-                        }
-                        rest = n;
-                        intermediateNumber = String.valueOf(rest) + intermediateNumber;
-                    }
-
+        int tens = 1;
+// идем с конца второго числа и до его начала
+        for (int i = n1.size() - 1; i >= 0; i--) {
+            int head = 0; // если число, полученное от умножения, больше 9 - сохраняем перенос на разряд влево
+            int currentNumber; // текущие число, на которое производится умножение всего первого числа
+            int n; // здесь будет храниться результат умножения
+            currentNumber = n1.get(i); // записываем текущую цифру, которую будем умножать на первое число
+            String intermediateNumber = ""; // здесь будет наполняться промежуточное число
+            for (int j = n2.size() - 1; j >= 0; j--) { // начинаем перебор первого числа
+                n = (currentNumber * n2.get(j)) + head; // производим умножение
+                head = 0;
+                while (n >= 10) {
+                    n = n - 10;
+                    head++;
                 }
-                tempNumbers.add((Integer.parseInt(intermediateNumber)) * tens);
-                count = count + Integer.parseInt(intermediateNumber) * tens;
-                tens = tens * 10;
+// добавляем в начало нашего промежутчного числа
+                intermediateNumber = String.valueOf(n) + intermediateNumber;
             }
-        }
-        System.out.println("");
-        for (int i = 0; i < tempNumbers.size(); i++) {
-            if (i > 0 && i != tempNumbers.size()) {
-                System.out.println("+");
+            if (head != 0) {
+                intermediateNumber = String.valueOf(head) + intermediateNumber;
             }
-            System.out.println(tempNumbers.get(i));
+            tempNumbers = Integer.parseInt(intermediateNumber) * tens + tempNumbers;
+            tens = tens * 10;
         }
-        for (Integer element : x2.arr) {
-            System.out.print("_");
-        }
-        System.out.println("");
-        if (z_res == -1) {
-            System.out.print("-");
-        }
-        System.out.println(count / Math.pow(10, count(this).get(0) + count(x2).get(0)));
-        return null;
+        tempNumbers = tempNumbers / Math.pow(10, length);
+        String result = res_sign + tempNumbers;
+        return new Double_number(result);
     }
 
-    public void sum(Double_number x2) {
-        format(this, x2);
-        if (this.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
+    public Double_number sum(Double_number x2) {
+        format_for_equal_length(this, x2);
+        //переводим знак числа в int (-1 или 1)
+        int signX2 = 1;
+        int signThis = 1;
+        if (x2.sign == "-") {
+            signX2 = -1;
         }
-        for (int i = 1; i < this.arr.size(); i++) {
-            if (this.arr.get(i) != 10) {
-                System.out.print(this.arr.get(i));
-            } else {
-                System.out.print(",");
+        if (this.sign == "-") {
+            signThis = -1;
+        }
+        int count_dob = 0; //здесь будет сумма для дробной части
+        int count = 0; // здесь будет сумма для целой части
+        String res_sign = "";
+        int head = 0; //здесь хранится перенос разряда
+        int tens = 1;
+        //для дробной части
+        for (int i = this.arr_dob.size() - 1; i >= 0; i--) {
+
+            int a = signX2 * x2.arr_dob.get(i) + signThis * this.arr_dob.get(i) + head;
+            head = 0;
+            while (a >= 10) {
+                a = a - 10;
+                head++;
             }
+            count_dob = count_dob + a * tens;
+            tens = tens * 10;
         }
-        System.out.println("");
-        System.out.println("+");
-        if (x2.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
-        }
-        for (int i = 1; i < x2.arr.size(); i++) {
-            if (x2.arr.get(i) != 10) {
-                System.out.print(x2.arr.get(i));
-            } else {
-                System.out.print(",");
+        tens = 1;
+        //для целой части
+        for (int i = this.arr_int.size() - 1; i >= 0; i--) {
+
+            int a = signX2 * x2.arr_int.get(i) + signThis * this.arr_int.get(i) + head;
+            head = 0;
+            while (a >= 10) {
+                a = a - 10;
+                head++;
             }
+            count = count + a * tens;
+            tens = tens * 10;
         }
-        double max = Math.max(abs(this.toDouble()), abs(x2.toDouble()));
-        double count = 0.0;
-        double tens = 1 / Math.pow(10, (count(this).get(0)));
-        int k = 0;
-        for (int i = this.arr.size() - 1; i > 0; i--) {
-            if (i != x2.arr.indexOf(10)) {
-                int z;
-                if (x2.arr.get(0) * x2.arr.get(i) + this.arr.get(0) * this.arr.get(i) > 0) {
-                    z = 1;
-                } else {
-                    z = -1;
-                }
-                int a = x2.arr.get(0) * x2.arr.get(i) + this.arr.get(0) * this.arr.get(i) + k * (z);
-                k = 0;
-                while (a > 10) {
-                    a = a - 10;
-                    k++;
-                }
-                count = count + a * tens;
-                tens = tens * 10;
-            }
-        }
-        count = count + k * tens;
-        if (max < 0) {
+        if (count < 0) {
+            res_sign = "-";
+            count_dob = count_dob * (-1);
             count = count * (-1);
         }
-        System.out.println("");
-        for (Integer elem : this.arr) {
-            System.out.print("_");
+        if (head != 0) {
+            head = head * tens;
+            count = count + head;
         }
-        System.out.println("");
-        if (count > 0) {
-            System.out.print(" " + count);
-        } else {
-            System.out.print(count);
-        }
+        String result = res_sign + count + "." + count_dob;
+        return new Double_number(result);
     }
 
+    public Double_number minus(Double_number x2) {
+        format_for_equal_length(this, x2);
+        //переводим знак числа в int (-1 или 1)
+        int signX2 = 1;
+        int signThis = 1;
+        if (x2.sign == "-") {
+            signX2 = -1;
+        }
+        if (this.sign == "-") {
+            signThis = -1;
+        }
+        int count_dob = 0; //здесь будет сумма для дробной части
+        int count = 0; // здесь будет сумма для целой части
+        String res_sign = "";
+        int head = 0; //здесь хранится перенос разряда
+        int tens = 1;
+        //для дробной части
+        for (int i = this.arr_dob.size() - 1; i >= 0; i--) {
 
-    public void minus(Double_number x2) {
-        format(this, x2);
-        if (this.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
-        }
-        for (int i = 1; i < this.arr.size(); i++) {
-            if (this.arr.get(i) != 10) {
-                System.out.print(this.arr.get(i));
-            } else {
-                System.out.print(",");
+            int a = signThis * this.arr_dob.get(i) - signX2 * x2.arr_dob.get(i) + head;
+            head = 0;
+            while (a >= 10) {
+                a = a - 10;
+                head++;
             }
+            count_dob = count_dob + a * tens;
+            tens = tens * 10;
         }
-        System.out.println("");
-        System.out.println("-");
-        if (x2.arr.get(0) == -1) {
-            System.out.print("-");
-        } else {
-            System.out.print(" ");
-        }
-        for (int i = 1; i < x2.arr.size(); i++) {
-            if (x2.arr.get(i) != 10) {
-                System.out.print(x2.arr.get(i));
-            } else {
-                System.out.print(",");
+        tens = 1;
+        //для целой части
+        for (int i = this.arr_int.size() - 1; i >= 0; i--) {
+
+            int a = signThis * this.arr_int.get(i) - signX2 * x2.arr_int.get(i) + head;
+            head = 0;
+            while (a >= 10) {
+                a = a - 10;
+                head++;
             }
+            count = count + a * tens;
+            tens = tens * 10;
         }
-        double max = Math.max(abs(this.toDouble()), abs(x2.toDouble()));
-        double count = 0.0;
-        double tens = 1 / Math.pow(10, (count(this).get(0)));
-        int k = 0;
-        for (int i = this.arr.size() - 1; i > 0; i--) {
-            if (i != x2.arr.indexOf(10)) {
-                int z;
-                if (x2.arr.get(0) * x2.arr.get(i) - this.arr.get(0) * this.arr.get(i) > 0) {
-                    z = 1;
-                } else {
-                    z = -1;
-                }
-                int a = x2.arr.get(0) * x2.arr.get(i) - this.arr.get(0) * this.arr.get(i) + k * (z);
-                k = 0;
-                while (a > 10) {
-                    a = a - 10;
-                    k++;
-                }
-                count = count + a * tens;
-                tens = tens * 10;
-            }
-        }
-        count = count + k * tens;
-        if (max > 0) {
+        if (count < 0 || count_dob < 0) {
+            res_sign = "-";
+            count_dob = count_dob * (-1);
             count = count * (-1);
         }
-        System.out.println("");
-        for (Integer elem : this.arr) {
-            System.out.print("_");
+        if (head != 0) {
+            head = head * tens;
+            count = count + head;
         }
-        System.out.println("");
-        if (count > 0) {
-            System.out.print(" " + count);
-        } else {
-            System.out.print(count);
-        }
+        String result = res_sign + count + "." + count_dob;
+        return new Double_number(result);
     }
+
 
     public Double_number curcle(int q) {
-        int index = this.arr.indexOf(10);
-        if (arr.get(index + q + 1) >= 5) {
-            arr.set(index + q, (arr.get(index + q) + 1));
+        if (q >= arr_dob.size()) {
+            return this;
+        } else {
+            if (arr_dob.get(q) >= 5) {
+                arr_dob.set(q - 1, (arr_dob.get(q - 1) + 1));
+            }
+
+            for (int i = q; i < arr_dob.size(); i++) {
+                arr_dob.remove(i);
+            }
         }
-        for (int i = index + q + 1; i < arr.size(); i++) {
-            arr.remove(i);
-        }
-        String s = "";
-        if (arr.get(0) == -1) s += "-";
-        for (int i = 1; i < arr.size(); i++) {
-            if (arr.get(i) != 10) s += arr.get(i);
-            else s += ".";
-        }
-        return new Double_number(s);
+        return this;
     }
 
     public int toIntE() {
-        if ((int) Double.parseDouble(arr2) != Double.parseDouble(arr2))
+        if (arr_dob.size() != 0) {
             throw new IllegalArgumentException("Потеря точности");
-        return (int) Double.parseDouble(arr2);
+        }
+        int count = 0;
+        int tens = 1;
+        for (int i = arr_int.size() - 1; i <= 0; i--) {
+            count = arr_int.get(i) * tens + count;
+            tens = tens * 10;
+        }
+        return count;
     }
 
     public int toInt() {
-        return (int) Double.parseDouble(arr2);
+        int count = 0;
+        int tens = 1;
+        for (int i = arr_int.size() - 1; i >= 0; i--) {
+            count = arr_int.get(i) * tens + count;
+            tens = tens * 10;
+        }
+        if (sign == "-") {
+            count = count * (-1);
+        }
+        return count;
     }
 
     public long toLongE() {
-        if ((long) Double.parseDouble(arr2) != Double.parseDouble(arr2))
+        if ((arr_dob.size() != 0) || abs(this.toInt()) > 3.4 * Math.pow(10, 32)) {
             throw new IllegalArgumentException("Потеря точности");
-        return (long) Double.parseDouble(arr2);
+        }
+        long count = 0;
+        int tens = 1;
+        for (int i = arr_int.size() - 1; i >= 0; i--) {
+            count = arr_int.get(i) * tens + count;
+            tens = tens * 10;
+        }
+        return count;
     }
 
     public long toLong() {
-        return (long) Double.parseDouble(arr2);
+        int count = 0;
+        int tens = 1;
+        for (int i = arr_int.size() - 1; i >= 0; i--) {
+            count = arr_int.get(i) * tens + count;
+            tens = tens * 10;
+        }
+        return count;
     }
 
     public float toFloatE() {
-        if (abs(Double.parseDouble(arr2)) > 3.4 * Math.pow(10, 32))
+        if (this.toFloat() > 3.4 * Math.pow(10, 32)) {
             throw new IllegalArgumentException("Потеря точности");
-        return (float) Double.parseDouble(arr2);
+        }
+        return this.toFloat();
     }
 
     public float toFloat() {
-        return (float) Double.parseDouble(arr2);
+        float count = 0;
+        float tens = 1;
+        for (int elem : arr_int) {
+            count = elem * tens + count;
+            tens = tens * 10;
+        }
+        tens = 0.1f;
+        for (int elem : arr_dob) {
+            count = elem * tens + count;
+            tens = tens / 10;
+        }
+        if (sign == "-") {
+            count = count * (-1);
+        }
+        return count;
     }
 
     public double toDoubleE() {
-        if (abs(Double.parseDouble(arr2)) > 1.7 * Math.pow(10,
+        if (abs(this.toDouble()) > 1.7 * Math.pow(10,
                 308))
             throw new IllegalArgumentException("Потеря точности");
-        return Double.parseDouble(arr2);
+        return this.toDouble();
     }
 
     public double toDouble() {
-        return Double.parseDouble(arr2);
+        double count = 0;
+        double tens = Math.pow(10, arr_int.size() - 1);
+        for (int elem : arr_int) {
+            count = elem * tens + count;
+            tens = tens / 10;
+        }
+        for (int elem : arr_dob) {
+            count = elem * tens + count;
+            tens = tens / 10;
+        }
+        if (sign == "-") {
+            count = count * (-1);
+        }
+        return count;
     }
+
 }
 
