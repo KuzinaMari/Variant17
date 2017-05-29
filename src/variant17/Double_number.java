@@ -2,8 +2,7 @@ package variant17;
 
 
 import java.util.ArrayList;
-
-
+import java.util.Collections;
 
 import static java.lang.Math.abs;
 
@@ -11,21 +10,26 @@ import static java.lang.Math.abs;
 /**
  * Created by KuzinAM on 01.03.17.
  */
-public class Double_number {
-    ArrayList<Integer> arr_int = new ArrayList<>();
-    ArrayList<Integer> arr_dob = new ArrayList<>();
-    String sign;
+public class DoubleNumber {
+    final ArrayList<Integer> myIntegralPart = new ArrayList<>(); //одина раз присвоили значение, больше не меняекм
+    final ArrayList<Integer> myFractionalPart = new ArrayList<>();
+    final Boolean sign;
 
-    public Double_number(String y) {
-        ArrayList<Integer> arr_int = new ArrayList<>();
-        ArrayList<Integer> arr_dob = new ArrayList<>();
-        ArrayList<Character> help_get_index = new ArrayList<>();
-        String sign = "";
+    private DoubleNumber(ArrayList<Integer> integralPart, ArrayList<Integer> fractionalPart, Boolean sign ){
+        myIntegralPart.addAll(integralPart);
+        myFractionalPart.addAll(fractionalPart);
+        this.sign = sign;
+    }
+
+    public DoubleNumber(String y) {
+        ArrayList<Character> helpGetIndex = new ArrayList<>();
+        Boolean sign = true;
         char[] chars = y.toCharArray();
         for (char element : chars) {
-            help_get_index.add(element);
+            helpGetIndex.add(element);
         }
-        int index = help_get_index.indexOf('.');
+
+        int index = helpGetIndex.indexOf('.');
         for (int i = 0; i < chars.length; i++) {
             //проверка формата строки (на единственную запятую и наличие исключительно цифр в строке)
             try {
@@ -37,38 +41,36 @@ public class Double_number {
             }
             //устанавливается значения знака
             if (chars[0] == '-') {
-                sign = "-";
-                help_get_index.remove(0);
+                sign = false;
+                helpGetIndex.remove(0);
             }
             //в массив целой части и массив дробной заносятся цифры
             if (i < index && i >= 0) {
                 int intarr = Character.getNumericValue(chars[i]);
-                arr_int.add(intarr);
+                myIntegralPart.add(intarr);
             }
             if (i > index) {
                 int intarr = Character.getNumericValue(chars[i]);
-                arr_dob.add(intarr);
+                myFractionalPart.add(intarr);
             }
         }
-        this.arr_dob = arr_dob;
-        this.arr_int = arr_int;
         this.sign = sign;
     }
 
-    public static Double_number fromInt(int d) {
-        return new Double_number(Integer.toString(d));
+    public static DoubleNumber fromInt(int d) {
+        return new DoubleNumber(Integer.toString(d));
     }
 
-    public static Double_number fromLong(long d) {
-        return new Double_number(Long.toString(d));
+    public static DoubleNumber fromLong(long d) {
+        return new DoubleNumber(Long.toString(d));
     }
 
-    public static Double_number fromFloat(float d) {
-        return new Double_number(Float.toString(d));
+    public static DoubleNumber fromFloat(float d) {
+        return new DoubleNumber(Float.toString(d));
     }
 
-    public static Double_number fromDouble(double d) {
-        return new Double_number(Double.toString(d));
+    public static DoubleNumber fromDouble(double d) {
+        return new DoubleNumber(Double.toString(d));
     }
 
     @Override
@@ -76,66 +78,66 @@ public class Double_number {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Double_number that = (Double_number) o;
+        DoubleNumber that = (DoubleNumber) o;
 
-        if (arr_int != null ? !arr_int.equals(that.arr_int) : that.arr_int != null) return false;
-        if (arr_dob != null ? !arr_dob.equals(that.arr_dob) : that.arr_dob != null) return false;
+        if (myIntegralPart != null ? !myIntegralPart.equals(that.myIntegralPart) : that.myIntegralPart != null) return false;
+        if (myFractionalPart != null ? !myFractionalPart.equals(that.myFractionalPart) : that.myFractionalPart != null) return false;
         return sign != null ? sign.equals(that.sign) : that.sign == null;
     }
 
     @Override
     public int hashCode() {
-        int result = arr_int != null ? arr_int.hashCode() : 0;
-        result = 31 * result + (arr_dob != null ? arr_dob.hashCode() : 0);
+        int result = myIntegralPart != null ? myIntegralPart.hashCode() : 0;
+        result = 31 * result + (myFractionalPart != null ? myFractionalPart.hashCode() : 0);
         result = 31 * result + (sign != null ? sign.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        String sSign = "";
-        if (sign == "") {
+        String sSign = " - ";
+        if (sign == true) {
             sSign = " + ";
         }
-        return "Double_number{" +
-                "arr_int=" + arr_int +
-                ", arr_dob=" + arr_dob +
-                ", sign=" + sSign +
+        return "DoubleNumber{" +
+                "myIntegralPart=" + myIntegralPart +
+                ", myFractionalPart=" + myFractionalPart +
+                ", sign=" +  sSign +
                 '}';
     }
 
 
     //функция для установления одинаковой длины массивов двух чисел (для арифметических операций)
-    private void format_for_equal_length(Double_number x1, Double_number x2) {
-        while (x1.arr_int.size() < x2.arr_int.size()) {
-            x1.arr_int.add(0, 0);
+    private void format_for_equal_length(DoubleNumber x1, DoubleNumber x2) {
+        while (x1.myIntegralPart.size() < x2.myIntegralPart.size()) {
+            x1.myIntegralPart.add(0, 0);
 
         }
-        while (x2.arr_int.size() < x1.arr_int.size()) {
-            x2.arr_int.add(0, 0);
+        while (x2.myIntegralPart.size() < x1.myIntegralPart.size()) {
+            x2.myIntegralPart.add(0, 0);
         }
-        while (x1.arr_dob.size() < x2.arr_dob.size()) {
-            x1.arr_dob.add(0, 0);
+        while (x1.myFractionalPart.size() < x2.myFractionalPart.size()) {
+            x1.myFractionalPart.add(0, 0);
         }
-        while (x2.arr_dob.size() < x1.arr_dob.size()) {
-            x2.arr_dob.add(0, 0);
+        while (x2.myFractionalPart.size() < x1.myFractionalPart.size()) {
+            x2.myFractionalPart.add(0, 0);
         }
     }
 
-    public Double_number multi(Double_number x2) {
+    public DoubleNumber multi(DoubleNumber x2) {
         format_for_equal_length(this, x2);
-        int length = this.arr_dob.size() + x2.arr_dob.size();
+        int length = this.myFractionalPart.size() + x2.myFractionalPart.size();
         String res_sign = "";
-        if (((x2.sign == "-") && (this.sign != "-")) || ((x2.sign != "-") && (this.sign == "-"))) {
+        if (((x2.sign == false) && (this.sign != false)) || ((x2.sign != false) && (this.sign == false))) {
             res_sign += "-";
         }
         double tempNumbers = 0;
         ArrayList<Integer> n1 = new ArrayList<>();
         ArrayList<Integer> n2 = new ArrayList<>();
-        n1.addAll(this.arr_int);
-        n1.addAll(this.arr_dob);
-        n2.addAll(x2.arr_int);
-        n2.addAll(x2.arr_dob);
+        n1.addAll(this.myIntegralPart);
+        n1.addAll(this.myFractionalPart);
+        n2.addAll(x2.myIntegralPart);
+        n2.addAll(x2.myFractionalPart);
 
         int tens = 1;
 // идем с конца второго числа и до его начала
@@ -163,141 +165,126 @@ public class Double_number {
         }
         tempNumbers = tempNumbers / Math.pow(10, length);
         String result = res_sign + tempNumbers;
-        return new Double_number(result);
+        return new DoubleNumber(result);
+    }
+    private static int sumLists( ArrayList<Integer> resList, int sign1, ArrayList<Integer> list1,
+                                 int sign2, ArrayList<Integer> list2, int forNextPosition ){
+        int size = Math.max( list1.size(), list2.size() ); //определяется длина наибольшего масссива
+        //Если имеется символ, он используется. Если нет, то он считаеется равным 0
+        for( int i = size - 1; i >= 0; i-- ){
+            int n1 = list1.size() > i ? list1.get( i ) : 0;
+            int n2 = list2.size() > i ? list2.get( i ) : 0;
+            //производится суммироваание, учитывая знак исходных чисел
+            int sum = sign1 * n1 + sign2 * n2 + forNextPosition;
+            resList.set( i, abs( sum ) % 10 );
+            if( sum != 0 ) {
+                forNextPosition = (int)((sum / abs(sum)) * Math.floor(abs(sum) / 10) % 10);
+            }
+        }
+        return forNextPosition;
     }
 
-    public Double_number sum(Double_number x2) {
-        format_for_equal_length(this, x2);
-        //переводим знак числа в int (-1 или 1)
-        int signX2 = 1;
-        int signThis = 1;
-        if (x2.sign == "-") {
-            signX2 = -1;
+    public DoubleNumber sum(DoubleNumber x2) {
+        int frSize = Math.max( myFractionalPart.size(), x2.myFractionalPart.size() );
+        ArrayList<Integer> newFractionalPart = new ArrayList( Collections.nCopies(frSize, 0) );
+        int intSize = Math.max( myIntegralPart.size(), x2.myIntegralPart.size() );
+        ArrayList<Integer> newIntegralPart = new ArrayList( Collections.nCopies(intSize, 0) );
+        int forNextPos = sumLists( newFractionalPart, this.sign ? 1 : -1, myFractionalPart,
+                x2.sign ? 1 : -1, x2.myFractionalPart, 0 );
+        forNextPos = sumLists( newIntegralPart, this.sign ? 1 : -1, myIntegralPart,
+                x2.sign ? 1 : -1, x2.myIntegralPart, forNextPos );
+        if( forNextPos != 0 ) {
+            newIntegralPart.add(0, abs(forNextPos));
         }
-        if (this.sign == "-") {
-            signThis = -1;
-        }
-        int count_dob = 0; //здесь будет сумма для дробной части
-        int count = 0; // здесь будет сумма для целой части
-        String res_sign = "";
-        int head = 0; //здесь хранится перенос разряда
-        int tens = 1;
-        //для дробной части
-        for (int i = this.arr_dob.size() - 1; i >= 0; i--) {
+        return new DoubleNumber( newIntegralPart, newFractionalPart, Math.signum( forNextPos ) >= 0 );
 
-            int a = signX2 * x2.arr_dob.get(i) + signThis * this.arr_dob.get(i) + head;
-            head = 0;
-            while (a >= 10) {
-                a = a - 10;
-                head++;
-            }
-            count_dob = count_dob + a * tens;
-            tens = tens * 10;
-        }
-        tens = 1;
-        //для целой части
-        for (int i = this.arr_int.size() - 1; i >= 0; i--) {
-
-            int a = signX2 * x2.arr_int.get(i) + signThis * this.arr_int.get(i) + head;
-            head = 0;
-            while (a >= 10) {
-                a = a - 10;
-                head++;
-            }
-            count = count + a * tens;
-            tens = tens * 10;
-        }
-        if (count < 0) {
-            res_sign = "-";
-            count_dob = count_dob * (-1);
-            count = count * (-1);
-        }
-        if (head != 0) {
-            head = head * tens;
-            count = count + head;
-        }
-        String result = res_sign + count + "." + count_dob;
-        return new Double_number(result);
     }
 
-    public Double_number minus(Double_number x2) {
-        format_for_equal_length(this, x2);
-        //переводим знак числа в int (-1 или 1)
-        int signX2 = 1;
-        int signThis = 1;
-        if (x2.sign == "-") {
-            signX2 = -1;
-        }
-        if (this.sign == "-") {
-            signThis = -1;
-        }
-        int count_dob = 0; //здесь будет сумма для дробной части
-        int count = 0; // здесь будет сумма для целой части
-        String res_sign = "";
-        int head = 0; //здесь хранится перенос разряда
-        int tens = 1;
-        //для дробной части
-        for (int i = this.arr_dob.size() - 1; i >= 0; i--) {
-
-            int a = signThis * this.arr_dob.get(i) - signX2 * x2.arr_dob.get(i) + head;
-            head = 0;
-            while (a >= 10) {
-                a = a - 10;
-                head++;
+    private static int minusLists( ArrayList<Integer> resList, int sign1, ArrayList<Integer> list1,
+                                   int sign2, ArrayList<Integer> list2, int forNextPosition ){
+        int size = Math.max( list1.size(), list2.size() ); //определяется длина наибольшего масссива
+        //Если имеется символ, он используется. Если нет, то он считаеется равным 0
+        for( int i = size - 1; i >= 0; i-- ){
+            int n1 = list1.size() > i ? list1.get( i ) : 0;
+            int n2 = list2.size() > i ? list2.get( i ) : 0;
+            //производится суммироваание, учитывая знак исходных чисел
+            int sum = sign1 * n1 - sign2 * n2 + forNextPosition;
+            resList.set( i, abs( sum ) % 10 );
+            if( sum != 0 ) {
+                forNextPosition = (int)((sum / abs(sum)) * Math.floor(abs(sum) / 10) % 10);
             }
-            count_dob = count_dob + a * tens;
-            tens = tens * 10;
         }
-        tens = 1;
-        //для целой части
-        for (int i = this.arr_int.size() - 1; i >= 0; i--) {
+        return forNextPosition;
+    }
 
-            int a = signThis * this.arr_int.get(i) - signX2 * x2.arr_int.get(i) + head;
-            head = 0;
-            while (a >= 10) {
-                a = a - 10;
-                head++;
+    public DoubleNumber minus(DoubleNumber x2) {
+        int frSize = Math.max( myFractionalPart.size(), x2.myFractionalPart.size() );
+        ArrayList<Integer> newFractionalPart = new ArrayList( Collections.nCopies(frSize, 0) );
+        int intSize = Math.max( myIntegralPart.size(), x2.myIntegralPart.size() );
+        ArrayList<Integer> newIntegralPart = new ArrayList( Collections.nCopies(intSize, 0) );
+        int forNextPos = minusLists( newFractionalPart, this.sign ? 1 : -1, myFractionalPart,
+                x2.sign ? 1 : -1, x2.myFractionalPart, 0 );
+        forNextPos = minusLists( newIntegralPart, this.sign ? 1 : -1, myIntegralPart,
+                x2.sign ? 1 : -1, x2.myIntegralPart, forNextPos );
+        if( forNextPos != 0 ) {
+            newIntegralPart.add(0, abs(forNextPos));
+        }
+        forNextPos = -1;
+        if( forNextPos == 0 ) {
+            if (x2.myIntegralPart.size() == intSize && x2.sign == false && this.myIntegralPart.size() == intSize) {
+                for (int i = 0; i < intSize; i++) {
+                    if (x2.myIntegralPart.get(i) > this.myIntegralPart.get(i)) {
+                        forNextPos = 0;
+                        break;
+
+                    }
+                }
+            } else {
+                if (x2.sign == false ) {
+                    for (int i = 0; i < intSize; i++) {
+                        if (x2.myFractionalPart.get(i) > this.myFractionalPart.get(i)) {
+                            forNextPos = 0;
+                            break;
+
+                        }
+                    }
+                }
+
             }
-            count = count + a * tens;
-            tens = tens * 10;
         }
-        if (count < 0 || count_dob < 0) {
-            res_sign = "-";
-            count_dob = count_dob * (-1);
-            count = count * (-1);
-        }
-        if (head != 0) {
-            head = head * tens;
-            count = count + head;
-        }
-        String result = res_sign + count + "." + count_dob;
-        return new Double_number(result);
+        return new DoubleNumber( newIntegralPart, newFractionalPart, Math.signum( forNextPos*(-1) ) >= 0 );
+
     }
 
 
-    public Double_number curcle(int q) {
-        if (q >= arr_dob.size()) {
-            return this;
+
+    public DoubleNumber round(int q) {
+        ArrayList<Integer> newIntegralPart = new ArrayList<Integer>();
+        ArrayList<Integer> newFractionalPart = new ArrayList<Integer>();
+        newIntegralPart.addAll(myIntegralPart);
+        newFractionalPart.addAll(myFractionalPart);
+        if (q >= myFractionalPart.size()) {
+            return new DoubleNumber( myIntegralPart, myFractionalPart, this.sign );
         } else {
-            if (arr_dob.get(q) >= 5) {
-                arr_dob.set(q - 1, (arr_dob.get(q - 1) + 1));
+            if (myFractionalPart.get(q) >= 5) {
+                newFractionalPart.set(q - 1, (myFractionalPart.get(q - 1) + 1));
             }
 
-            for (int i = q; i < arr_dob.size(); i++) {
-                arr_dob.remove(i);
+            for (int i = q; i < newFractionalPart.size(); i++) {
+                newFractionalPart.remove(i);
             }
         }
-        return this;
+        return new DoubleNumber( newIntegralPart, newFractionalPart, this.sign );
     }
 
     public int toIntE() {
-        if (arr_dob.size() != 0) {
+        if (myFractionalPart.size() != 0) {
             throw new IllegalArgumentException("Потеря точности");
         }
         int count = 0;
         int tens = 1;
-        for (int i = arr_int.size() - 1; i <= 0; i--) {
-            count = arr_int.get(i) * tens + count;
+        for (int i = myIntegralPart.size() - 1; i <= 0; i--) {
+            count = myIntegralPart.get(i) * tens + count;
             tens = tens * 10;
         }
         return count;
@@ -306,24 +293,24 @@ public class Double_number {
     public int toInt() {
         int count = 0;
         int tens = 1;
-        for (int i = arr_int.size() - 1; i >= 0; i--) {
-            count = arr_int.get(i) * tens + count;
+        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
+            count = myIntegralPart.get(i) * tens + count;
             tens = tens * 10;
         }
-        if (sign == "-") {
+        if (sign == false) {
             count = count * (-1);
         }
         return count;
     }
 
     public long toLongE() {
-        if ((arr_dob.size() != 0) || abs(this.toInt()) > 3.4 * Math.pow(10, 32)) {
+        if ((myFractionalPart.size() != 0) || abs(this.toInt()) > 3.4 * Math.pow(10, 32)) {
             throw new IllegalArgumentException("Потеря точности");
         }
         long count = 0;
         int tens = 1;
-        for (int i = arr_int.size() - 1; i >= 0; i--) {
-            count = arr_int.get(i) * tens + count;
+        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
+            count = myIntegralPart.get(i) * tens + count;
             tens = tens * 10;
         }
         return count;
@@ -332,8 +319,8 @@ public class Double_number {
     public long toLong() {
         int count = 0;
         int tens = 1;
-        for (int i = arr_int.size() - 1; i >= 0; i--) {
-            count = arr_int.get(i) * tens + count;
+        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
+            count = myIntegralPart.get(i) * tens + count;
             tens = tens * 10;
         }
         return count;
@@ -349,16 +336,16 @@ public class Double_number {
     public float toFloat() {
         float count = 0;
         float tens = 1;
-        for (int elem : arr_int) {
+        for (int elem : myIntegralPart) {
             count = elem * tens + count;
             tens = tens * 10;
         }
         tens = 0.1f;
-        for (int elem : arr_dob) {
+        for (int elem : myFractionalPart) {
             count = elem * tens + count;
             tens = tens / 10;
         }
-        if (sign == "-") {
+        if (sign == false) {
             count = count * (-1);
         }
         return count;
@@ -373,20 +360,21 @@ public class Double_number {
 
     public double toDouble() {
         double count = 0;
-        double tens = Math.pow(10, arr_int.size() - 1);
-        for (int elem : arr_int) {
+        double tens = Math.pow(10, myIntegralPart.size() - 1);
+        for (int elem : myIntegralPart) {
             count = elem * tens + count;
             tens = tens / 10;
         }
-        for (int elem : arr_dob) {
+        for (int elem : myFractionalPart) {
             count = elem * tens + count;
             tens = tens / 10;
         }
-        if (sign == "-") {
+        if (sign == false) {
             count = count * (-1);
         }
         return count;
     }
+
 
 }
 
