@@ -1,21 +1,25 @@
 
 
 
+
+
+
 import org.junit.jupiter.api.Tag;
         import org.junit.jupiter.api.Test;
-import variant17.DoubleNumber;
+import variant17.DecimalNumber;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class tests {
-    private DoubleNumber m1 = new DoubleNumber("12.119");
-    private DoubleNumber m2 = new DoubleNumber("11.0");
-    private DoubleNumber m3 = new DoubleNumber("23.119");
-    private DoubleNumber m4 = new DoubleNumber("9.419");
-    private DoubleNumber m5 = new DoubleNumber("6.001");
-    private DoubleNumber m6 = new DoubleNumber("3.418");
-    private DoubleNumber m7 = new DoubleNumber("133.309");
+    private DecimalNumber m1 = new DecimalNumber("12.119");
+    private DecimalNumber m2 = new DecimalNumber("11.0");
+    private DecimalNumber m3 = new DecimalNumber("23.119");
+    private DecimalNumber m4 = new DecimalNumber("9.419");
+    private DecimalNumber m5 = new DecimalNumber("6.001");
+    private DecimalNumber m6 = new DecimalNumber("3.418");
+    private DecimalNumber m7 = new DecimalNumber("133.309");
 
 
     @Test
@@ -31,43 +35,40 @@ class tests {
         assertEquals(m2.toLong(), 11);
     }
 
-    @Test
-    @Tag("toIntE")
-    void toIntE() {
-        try {
-            new DoubleNumber("156.76876").toIntE();
-            assertEquals("IllegalArgumentException", "---");
-        } catch (IllegalArgumentException e) {
-            assertEquals(12, 12);
-        }
-    }
 
     @Test
     @Tag("toDouble")
     void toDouble() {
-        assertEquals(12.419, m1.toDouble());
+        assertEquals(12.119, m1.toDouble());
     }
 
     @Test
-    @Tag("curcle")
-    void curcle() {
-        assertEquals(12.42, m1.round(2).toDouble());
+    @Tag("round")
+    void round() {
+        assertEquals("12.12", m1.round(2).toString());
+        assertEquals("12", new DecimalNumber( "12.03" ).round(1).toString());
+        assertEquals("-12", new DecimalNumber( "-12.03" ).round(1).toString());
+    }
+
+    private static DecimalNumber numb( String str ){
+        return new DecimalNumber( str );
     }
 
     @Test
     @Tag("Sum")
     void sum() {
-        assertEquals(m3, m1.sum(m2));
+        assertTrue( numb( "0.209" ).equals( numb( "0.099" ).sum( numb( "0.11" ) ) ) );
+        assertTrue( m3.equals( m1.sum(m2) ) ); //assertEquals(m3, m1.sum(m2));
     }
 
     @Test
     @Tag("Minus")
     void minus() {
-        assertEquals(m6, m4.minus(m5));
+        assertTrue( m6.equals( m4.minus(m5) ) );
     }
     @Test
-    @Tag("Mult")
-    void multi() {
-        assertEquals(m7, m2.multi(m1));
+    @Tag("product")
+    void product() {
+        assertTrue(m7.equals( m2.product(m1) ) );
     }
 }
