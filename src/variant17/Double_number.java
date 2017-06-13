@@ -1,380 +1,280 @@
 package variant17;
+import java.util.Arrays;
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-
-import static java.lang.Math.abs;
-
-
-/**
- * Created by KuzinAM on 01.03.17.
- */
-public class DoubleNumber {
-    final ArrayList<Integer> myIntegralPart = new ArrayList<>(); //одина раз присвоили значение, больше не меняекм
-    final ArrayList<Integer> myFractionalPart = new ArrayList<>();
-    final Boolean sign;
-
-    private DoubleNumber(ArrayList<Integer> integralPart, ArrayList<Integer> fractionalPart, Boolean sign ){
-        myIntegralPart.addAll(integralPart);
-        myFractionalPart.addAll(fractionalPart);
-        this.sign = sign;
-    }
-
-    public DoubleNumber(String y) {
-        ArrayList<Character> helpGetIndex = new ArrayList<>();
-        Boolean sign = true;
-        char[] chars = y.toCharArray();
-        for (char element : chars) {
-            helpGetIndex.add(element);
-        }
-
-        int index = helpGetIndex.indexOf('.');
-        for (int i = 0; i < chars.length; i++) {
-            //проверка формата строки (на единственную запятую и наличие исключительно цифр в строке)
-            try {
-                if (i != index) {
-                    int elem = Character.getNumericValue(chars[i]);
+public class DecimalNumber{
+    private static final char MARK = '.';//константа точка, нужна для сравнения с символами
+    private byte mySign;//здесь хранится знак числа, byte потому что так удобнее использовать в арифметических операциях
+    private byte[] myMantissa; //хранятся цифры числа
+    private int myExponent;//здесь хренится степень числа(кол-во цифр после запятой)
+    public DecimalNumber( String number ){
+        final int len = number.length();//длина числа(константа)
+        myMantissa = new byte[ len ];//создается массив размером с длину числа
+        myExponent = 0;//обнуляется степень
+        mySign = 1;
+        int mantissaIndex = -1;//хранится какой конкретно бит числа мы заполняем
+        boolean integralPart = true;//числа до точки
+        int offset = 0;//будет считать нули на конце
+        for( int i = 0; i < len; i++ ){
+            myMantissa[ i ] = -1;//отладочное значение
+            char chr = number.charAt( i );//берем очередной символ
+            if( Character.isDigit( chr ) ){//если он цифра
+                byte digit = ( byte ) Character.getNumericValue( chr );//переводим char в byte
+                if( digit > 0 || mantissaIndex >= 0 ){ //если в начале нет значащих цифр, то они здесь отбросятся
+                    mantissaIndex++;
+                    myMantissa[ mantissaIndex ] = digit;//заполняем число
                 }
-            } catch (NumberFormatException e) {
-                System.err.println(" Неверный формат строки! ");
-            }
-            //устанавливается значения знака
-            if (chars[0] == '-') {
-                sign = false;
-                helpGetIndex.remove(0);
-            }
-            //в массив целой части и массив дробной заносятся цифры
-            if (i < index && i >= 0) {
-                int intarr = Character.getNumericValue(chars[i]);
-                myIntegralPart.add(intarr);
-            }
-            if (i > index) {
-                int intarr = Character.getNumericValue(chars[i]);
-                myFractionalPart.add(intarr);
-            }
-        }
-        this.sign = sign;
-    }
-
-    public static DoubleNumber fromInt(int d) {
-        return new DoubleNumber(Integer.toString(d));
-    }
-
-    public static DoubleNumber fromLong(long d) {
-        return new DoubleNumber(Long.toString(d));
-    }
-
-    public static DoubleNumber fromFloat(float d) {
-        return new DoubleNumber(Float.toString(d));
-    }
-
-    public static DoubleNumber fromDouble(double d) {
-        return new DoubleNumber(Double.toString(d));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        DoubleNumber that = (DoubleNumber) o;
-
-        if (myIntegralPart != null ? !myIntegralPart.equals(that.myIntegralPart) : that.myIntegralPart != null) return false;
-        if (myFractionalPart != null ? !myFractionalPart.equals(that.myFractionalPart) : that.myFractionalPart != null) return false;
-        return sign != null ? sign.equals(that.sign) : that.sign == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = myIntegralPart != null ? myIntegralPart.hashCode() : 0;
-        result = 31 * result + (myFractionalPart != null ? myFractionalPart.hashCode() : 0);
-        result = 31 * result + (sign != null ? sign.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        String sSign = " - ";
-        if (sign == true) {
-            sSign = " + ";
-        }
-        return "DoubleNumber{" +
-                "myIntegralPart=" + myIntegralPart +
-                ", myFractionalPart=" + myFractionalPart +
-                ", sign=" +  sSign +
-                '}';
-    }
-
-
-    //функция для установления одинаковой длины массивов двух чисел (для арифметических операций)
-    private void format_for_equal_length(DoubleNumber x1, DoubleNumber x2) {
-        while (x1.myIntegralPart.size() < x2.myIntegralPart.size()) {
-            x1.myIntegralPart.add(0, 0);
-
-        }
-        while (x2.myIntegralPart.size() < x1.myIntegralPart.size()) {
-            x2.myIntegralPart.add(0, 0);
-        }
-        while (x1.myFractionalPart.size() < x2.myFractionalPart.size()) {
-            x1.myFractionalPart.add(0, 0);
-        }
-        while (x2.myFractionalPart.size() < x1.myFractionalPart.size()) {
-            x2.myFractionalPart.add(0, 0);
-        }
-    }
-
-    public DoubleNumber multi(DoubleNumber x2) {
-        format_for_equal_length(this, x2);
-        int length = this.myFractionalPart.size() + x2.myFractionalPart.size();
-        String res_sign = "";
-        if (((x2.sign == false) && (this.sign != false)) || ((x2.sign != false) && (this.sign == false))) {
-            res_sign += "-";
-        }
-        double tempNumbers = 0;
-        ArrayList<Integer> n1 = new ArrayList<>();
-        ArrayList<Integer> n2 = new ArrayList<>();
-        n1.addAll(this.myIntegralPart);
-        n1.addAll(this.myFractionalPart);
-        n2.addAll(x2.myIntegralPart);
-        n2.addAll(x2.myFractionalPart);
-
-        int tens = 1;
-// идем с конца второго числа и до его начала
-        for (int i = n1.size() - 1; i >= 0; i--) {
-            int head = 0; // если число, полученное от умножения, больше 9 - сохраняем перенос на разряд влево
-            int currentNumber; // текущие число, на которое производится умножение всего первого числа
-            int n; // здесь будет храниться результат умножения
-            currentNumber = n1.get(i); // записываем текущую цифру, которую будем умножать на первое число
-            String intermediateNumber = ""; // здесь будет наполняться промежуточное число
-            for (int j = n2.size() - 1; j >= 0; j--) { // начинаем перебор первого числа
-                n = (currentNumber * n2.get(j)) + head; // производим умножение
-                head = 0;
-                while (n >= 10) {
-                    n = n - 10;
-                    head++;
+                if( integralPart ){//если не было точки
+                    myExponent = mantissaIndex;//записываем индекс, чтобы при умножении на мантиссу получить число
+                }else if( digit == 0 && mantissaIndex < 0 ){//если точка была, или нам важно кол-во нулей
+                    myExponent--;
                 }
-// добавляем в начало нашего промежутчного числа
-                intermediateNumber = String.valueOf(n) + intermediateNumber;
+                offset = digit == 0 ? offset + 1 : 0;//если офсет считал нули в середине, то мы его сбросим
+            }else if( chr == MARK ){
+                integralPart = false;
+            }else if( chr == '-' && mantissaIndex < 0 ){//если минус стоит в начале, то знак будет -1
+                mySign = -1;
             }
-            if (head != 0) {
-                intermediateNumber = String.valueOf(head) + intermediateNumber;
+            else throw new RuntimeException("Неверный форма строки");
+        }
+        if( mantissaIndex < 0 ){//не оказалось цифр, или число 0
+            myMantissa = new byte[ 1 ];//массив из одного элемента(0)
+            return;
+        }
+        byte[] newMantissa = new byte[ mantissaIndex + 1 - offset ];//если вдруг лишние элементы, (-1), то мы убираем их
+        for( int i = 0; i <= mantissaIndex - offset; i++ ) newMantissa[ i ] = myMantissa[ i ];
+        myMantissa = newMantissa;
+        myExponent = myExponent - mantissaIndex + offset;//кол-во цифр в дробной части и кол-во нулей на конце
+    }
+    private DecimalNumber( int sign, byte[] mantissa, int exponent ){//функция для кнутреннего использования, чтобы создавать каждый раз новое число, а первоначальное не поменялось
+        mySign = (byte) sign;
+        myMantissa = new byte[ mantissa.length ];
+        myExponent = exponent;
+        int mantissaIndex = -1;
+        int offset = 0;
+        for( int i = 0; i < myMantissa.length; i++ ){
+            myMantissa[ i ] = -1;
+            byte digit = ( byte ) mantissa[ i ];
+            if( digit > 0 || mantissaIndex >= 0 ){ //убираются нули в начале
+                mantissaIndex++;
+                myMantissa[ mantissaIndex ] = digit;
             }
-            tempNumbers = Integer.parseInt(intermediateNumber) * tens + tempNumbers;
-            tens = tens * 10;
+            offset = digit == 0 ? offset + 1 : 0;
         }
-        tempNumbers = tempNumbers / Math.pow(10, length);
-        String result = res_sign + tempNumbers;
-        return new DoubleNumber(result);
+        if( mantissaIndex < 0 ){
+            myMantissa = new byte[ 1 ];
+            myExponent = 0;
+            return;
+        }
+        if( mantissaIndex < myMantissa.length - 1 || offset > 0 ){//если не заполнили новую мантиссу
+            byte[] newMantissa = new byte[ mantissaIndex + 1 - offset ];
+            System.arraycopy( myMantissa, 0, newMantissa, 0, mantissaIndex + 1 - offset );//обрезали массив, если конец пустой
+            myMantissa = newMantissa;
+            myExponent = myExponent < 0 ? myExponent : myExponent + myMantissa.length - 1 - mantissaIndex + offset;
+        }
     }
-    private static int sumLists( ArrayList<Integer> resList, int sign1, ArrayList<Integer> list1,
-                                 int sign2, ArrayList<Integer> list2, int forNextPosition ){
-        int size = Math.max( list1.size(), list2.size() ); //определяется длина наибольшего масссива
-        //Если имеется символ, он используется. Если нет, то он считаеется равным 0
-        for( int i = size - 1; i >= 0; i-- ){
-            int n1 = list1.size() > i ? list1.get( i ) : 0;
-            int n2 = list2.size() > i ? list2.get( i ) : 0;
-            //производится суммироваание, учитывая знак исходных чисел
-            int sum = sign1 * n1 + sign2 * n2 + forNextPosition;
-            resList.set( i, abs( sum ) % 10 );
-            if( sum != 0 ) {
-                forNextPosition = (int)((sum / abs(sum)) * Math.floor(abs(sum) / 10) % 10);
+    static public DecimalNumber fromInteger( int number ){
+        return new DecimalNumber( Integer.toString( number ) );
+    }
+    static public DecimalNumber fromLong( long number ){
+        return new DecimalNumber( Long.toString( number ) );
+    }
+    static public DecimalNumber fromFloat( float number ){
+        return new DecimalNumber( Float.toString( number ) );
+    }
+    static public DecimalNumber fromDouble( double number ){
+        return new DecimalNumber( Double.toString( number ) );
+    }
+    private int integralSize(){//вычислиление длины целой части
+        return myMantissa.length + myExponent;
+    }
+    private int fractionalSize(){//выычисленеи длины дробной части
+        return - myExponent;
+    }
+    private int mantissaLength(){//длинна мантиссы
+        return myMantissa.length;
+    }
+    private static byte getNthDigit( int number, int n ){//получение nой цифры числа
+        return (byte) ( ( number / Math.pow( 10, n - 1) ) % 10 );
+    }
+    private static byte[] prepend( byte[] array, byte digit ){//добавляет массива вперед цифру
+        byte[] res = new byte[ array.length + 1 ];
+        res[ 0 ] = digit;
+        System.arraycopy( array, 0, res, 1, array.length );
+        return res;
+    }
+    private DecimalNumber sum( int sign, DecimalNumber number ){//операция для суммирования или вычитания
+        final int newIntegralSize = Math.max( integralSize(), number.integralSize() );//максимум между числами по размеру целых частей
+        final int newFractionalSize = Math.max( fractionalSize(), number.fractionalSize() );//максимум между числами по размеру дробных частей
+        final int newLen = newIntegralSize + newFractionalSize;//длина массива,  который нужен для суммы
+        byte[] res = new byte[ newLen ];//создаем массив
+        int forNextPosition = 0;
+        int sum = 0;
+        for( int i = newLen - 1; i >= 0; i-- ){//идем с конца
+            int index = i - ( newIntegralSize - integralSize() );//вычисление индекса цифры(так как числа могут быть разной длины)
+            byte digit1 = index < mantissaLength() && index >= 0 ? myMantissa[ index ] : 0;//если нет нужного разряда сложение будет с 0
+            index = i - ( newIntegralSize - number.integralSize() );
+            byte digit2 = index < number.mantissaLength() && index >= 0 ? number.myMantissa[ index ] : 0;
+            sum = mySign * digit1 + sign * number.mySign * digit2 + Integer.signum( sum ) * forNextPosition;//сложение чифр с учетом переноса знака
+            byte digit = getNthDigit( Math.abs( sum ), 1 );//последнюю цифру из полученной суммы записываем, остальное в перенос
+            forNextPosition = getNthDigit( Math.abs( sum ), 2 );
+            res[ i ] = digit;
+
+        }
+        if( forNextPosition != 0 ){//если суммирование окончено, а перенос остался, то его записываем вперед массива
+            res = prepend( res, ( byte ) forNextPosition );
+        }
+        return new DecimalNumber( ( sum >= 0 ? 1 : -1 ), res, -newFractionalSize );
+    }
+    private static byte[] digitProduct( byte[] mantissa, byte digit ){//умножение на цифру(не число!)
+        byte[] res = new byte[ mantissa.length ];
+        int forNextPosition = 0;
+        for( int i = mantissa.length - 1; i >=0; i-- ){
+            int product = mantissa[ i ] * digit + forNextPosition;
+            res[ i ] = getNthDigit( product, 1 );
+            forNextPosition = getNthDigit( product, 2 );
+        }
+        if( forNextPosition != 0 ){
+            res = prepend( res, ( byte ) forNextPosition );
+        }
+        return res;
+    }
+    public DecimalNumber product( DecimalNumber number ){//умножение на число
+        DecimalNumber res = new DecimalNumber( "0" );
+        for( int i = number.myMantissa.length - 1; i >=0; i-- ){
+            byte digit = number.myMantissa[ i ];//извлекаем число, на которое умножим
+            byte[] digitProduct = digitProduct( myMantissa, digit );//умножение на число
+            DecimalNumber numb = new DecimalNumber( mySign * number.mySign, digitProduct
+                    , myExponent + number.myExponent + ( number.myMantissa.length -1 - i ) );//создаем новое число
+            res = res.sum( numb );
+        }
+        return res;
+    }
+    public DecimalNumber sum( DecimalNumber number ){//само суммирование
+        return sum( 1, number );
+    }
+    public DecimalNumber minus( DecimalNumber number ){//вычитание
+        return sum( -1, number );
+    }
+    public String toString( boolean debug ){
+        StringBuilder res = new StringBuilder( mySign < 0 ? "-" : "" );
+        if( integralSize() <= 0 ) res.append( "0"+MARK );
+        for( int i = 0; i < - myExponent - myMantissa.length; i++ ) res.append( "0" );
+        int index = -1;
+        for( byte digit : myMantissa ){
+            if( digit < 0 || digit > 9 ) continue;
+            index++;
+            if( index == integralSize() && index > 0 ){
+                res.append( MARK );
             }
+            res.append( digit );
         }
-        return forNextPosition;
+        for( int i = 0; i < myExponent; i++ ) res.append( "0" );
+        if( debug ) {
+            res.append(" ");
+            res.append(Arrays.toString(myMantissa));
+            res.append(" ");
+            res.append(myExponent);
+        }
+        return res.toString();
+    }
+    @Override
+    public String toString(){
+        return toString( false );
+    }
+    private static long arrayToLong( byte[] mantissa ){
+        long res = 0;
+        for( int i = mantissa.length - 1; i >= 0; i-- ){
+            res += mantissa[ i ] * Math.pow( 10, mantissa.length - 1 - i );
+        }
+        return res;
     }
 
-    public DoubleNumber sum(DoubleNumber x2) {
-        int frSize = Math.max( myFractionalPart.size(), x2.myFractionalPart.size() );
-        ArrayList<Integer> newFractionalPart = new ArrayList( Collections.nCopies(frSize, 0) );
-        int intSize = Math.max( myIntegralPart.size(), x2.myIntegralPart.size() );
-        ArrayList<Integer> newIntegralPart = new ArrayList( Collections.nCopies(intSize, 0) );
-        int forNextPos = sumLists( newFractionalPart, this.sign ? 1 : -1, myFractionalPart,
-                x2.sign ? 1 : -1, x2.myFractionalPart, 0 );
-        forNextPos = sumLists( newIntegralPart, this.sign ? 1 : -1, myIntegralPart,
-                x2.sign ? 1 : -1, x2.myIntegralPart, forNextPos );
-        if( forNextPos != 0 ) {
-            newIntegralPart.add(0, abs(forNextPos));
-        }
-        return new DoubleNumber( newIntegralPart, newFractionalPart, Math.signum( forNextPos ) >= 0 );
-
+    public double toDouble(){
+        return arrayToLong( myMantissa ) * Math.pow( 10, myExponent );
     }
 
-    private static int minusLists( ArrayList<Integer> resList, int sign1, ArrayList<Integer> list1,
-                                   int sign2, ArrayList<Integer> list2, int forNextPosition ){
-        int size = Math.max( list1.size(), list2.size() ); //определяется длина наибольшего масссива
-        //Если имеется символ, он используется. Если нет, то он считаеется равным 0
-        for( int i = size - 1; i >= 0; i-- ){
-            int n1 = list1.size() > i ? list1.get( i ) : 0;
-            int n2 = list2.size() > i ? list2.get( i ) : 0;
-            //производится суммироваание, учитывая знак исходных чисел
-            int sum = sign1 * n1 - sign2 * n2 + forNextPosition;
-            resList.set( i, abs( sum ) % 10 );
-            if( sum != 0 ) {
-                forNextPosition = (int)((sum / abs(sum)) * Math.floor(abs(sum) / 10) % 10);
+    public float toFloat(){
+        return (float) toDouble();
+    }
+
+    public long toLong(){
+        if( myMantissa.length + myExponent <= 0 ){
+            throw new RuntimeException( "Дробная часть" );
+        }
+        return Math.round( toDouble() );
+    }
+
+    public int toInteger(){
+        return (int) toLong();
+    }
+
+    public DecimalNumber round( int precise ){
+        int len = myMantissa.length;
+        int index = len + myExponent + precise;
+        if( index <= 0 ){
+            return new DecimalNumber( "0" );
+        }
+//        byte first = myMantissa[  ];
+        byte[] newMantissa = new byte[ index ];
+        byte forNextPosition = -1;
+        byte digit = myMantissa[ index ];
+        if( digit < 5 ){
+            forNextPosition = 0;
+        }else if( digit > 5 ){
+            forNextPosition = 1;
+        }else{
+            if( index + 1 >= len ){ //нету значащих после отбрасываемой
+                byte lastSavedDigit = myMantissa[ index - 1 ];
+                if( lastSavedDigit % 2 == 0 ) {
+                    forNextPosition = 0;
+                }else{
+                    forNextPosition = 1;
+                }
+            }else{
+                forNextPosition = 1;
             }
+//            byte nextDigit = ( index + 1 < len ) ? myMantissa[ index + 1 ] : 0;
+//            if( nextDigit  )
         }
-        return forNextPosition;
-    }
-
-    public DoubleNumber minus(DoubleNumber x2) {
-        int frSize = Math.max( myFractionalPart.size(), x2.myFractionalPart.size() );
-        ArrayList<Integer> newFractionalPart = new ArrayList( Collections.nCopies(frSize, 0) );
-        int intSize = Math.max( myIntegralPart.size(), x2.myIntegralPart.size() );
-        ArrayList<Integer> newIntegralPart = new ArrayList( Collections.nCopies(intSize, 0) );
-        int forNextPos = minusLists( newFractionalPart, this.sign ? 1 : -1, myFractionalPart,
-                x2.sign ? 1 : -1, x2.myFractionalPart, 0 );
-        forNextPos = minusLists( newIntegralPart, this.sign ? 1 : -1, myIntegralPart,
-                x2.sign ? 1 : -1, x2.myIntegralPart, forNextPos );
-        if( forNextPos != 0 ) {
-            newIntegralPart.add(0, abs(forNextPos));
-        }
-        forNextPos = -1;
-        if( forNextPos == 0 ) {
-            if (x2.myIntegralPart.size() == intSize && x2.sign == false && this.myIntegralPart.size() == intSize) {
-                for (int i = 0; i < intSize; i++) {
-                    if (x2.myIntegralPart.get(i) > this.myIntegralPart.get(i)) {
-                        forNextPos = 0;
-                        break;
-
+        int offset = 0;
+        int mantissaIndex = -1;
+        for( int i = index - 1; i >= 0; i-- ){
+            digit = myMantissa[ i ];
+            byte newDigit = (byte) ( digit + mySign * forNextPosition );
+            if( newDigit == 0 ){
+                if( mantissaIndex < 0 ){//ещё нет записи в новую мантиссу
+                    offset += 1;
+                }else{
+                    offset = 0;
+                    mantissaIndex++;
+                    if( newDigit < 10 ){
+                        newMantissa[ i ] = newDigit;
+                        forNextPosition = 0;
+                    }else{
+                        newMantissa[ i ] = 0;
+                        forNextPosition = 1;
                     }
                 }
-            } else {
-                if (x2.sign == false ) {
-                    for (int i = 0; i < intSize; i++) {
-                        if (x2.myFractionalPart.get(i) > this.myFractionalPart.get(i)) {
-                            forNextPos = 0;
-                            break;
-
-                        }
-                    }
+            }else{
+                mantissaIndex++;
+                if( newDigit < 10 ){
+                    newMantissa[ i ] = newDigit;
+                    forNextPosition = 0;
+                }else{
+                    newMantissa[ i ] = 0;
+                    forNextPosition = 1;
                 }
-
             }
         }
-        return new DoubleNumber( newIntegralPart, newFractionalPart, Math.signum( forNextPos*(-1) ) >= 0 );
-
+        byte[] newMantissa2 = newMantissa;
+        if( offset > 0 ){
+            newMantissa2 = new byte[ index - offset ];
+            System.arraycopy( newMantissa, 0, newMantissa2, 0, index - offset );
+        }
+        return new DecimalNumber( mySign, newMantissa2, - precise + offset );
     }
-
-
-
-    public DoubleNumber round(int q) {
-        ArrayList<Integer> newIntegralPart = new ArrayList<Integer>();
-        ArrayList<Integer> newFractionalPart = new ArrayList<Integer>();
-        newIntegralPart.addAll(myIntegralPart);
-        newFractionalPart.addAll(myFractionalPart);
-        if (q >= myFractionalPart.size()) {
-            return new DoubleNumber( myIntegralPart, myFractionalPart, this.sign );
-        } else {
-            if (myFractionalPart.get(q) >= 5) {
-                newFractionalPart.set(q - 1, (myFractionalPart.get(q - 1) + 1));
-            }
-
-            for (int i = q; i < newFractionalPart.size(); i++) {
-                newFractionalPart.remove(i);
-            }
-        }
-        return new DoubleNumber( newIntegralPart, newFractionalPart, this.sign );
+    public boolean equals( DecimalNumber number ){
+        return Arrays.equals( myMantissa, number.myMantissa ) && myExponent == number.myExponent && mySign == number.mySign;
     }
-
-    public int toIntE() {
-        if (myFractionalPart.size() != 0) {
-            throw new IllegalArgumentException("Потеря точности");
-        }
-        int count = 0;
-        int tens = 1;
-        for (int i = myIntegralPart.size() - 1; i <= 0; i--) {
-            count = myIntegralPart.get(i) * tens + count;
-            tens = tens * 10;
-        }
-        return count;
-    }
-
-    public int toInt() {
-        int count = 0;
-        int tens = 1;
-        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
-            count = myIntegralPart.get(i) * tens + count;
-            tens = tens * 10;
-        }
-        if (sign == false) {
-            count = count * (-1);
-        }
-        return count;
-    }
-
-    public long toLongE() {
-        if ((myFractionalPart.size() != 0) || abs(this.toInt()) > 3.4 * Math.pow(10, 32)) {
-            throw new IllegalArgumentException("Потеря точности");
-        }
-        long count = 0;
-        int tens = 1;
-        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
-            count = myIntegralPart.get(i) * tens + count;
-            tens = tens * 10;
-        }
-        return count;
-    }
-
-    public long toLong() {
-        int count = 0;
-        int tens = 1;
-        for (int i = myIntegralPart.size() - 1; i >= 0; i--) {
-            count = myIntegralPart.get(i) * tens + count;
-            tens = tens * 10;
-        }
-        return count;
-    }
-
-    public float toFloatE() {
-        if (this.toFloat() > 3.4 * Math.pow(10, 32)) {
-            throw new IllegalArgumentException("Потеря точности");
-        }
-        return this.toFloat();
-    }
-
-    public float toFloat() {
-        float count = 0;
-        float tens = 1;
-        for (int elem : myIntegralPart) {
-            count = elem * tens + count;
-            tens = tens * 10;
-        }
-        tens = 0.1f;
-        for (int elem : myFractionalPart) {
-            count = elem * tens + count;
-            tens = tens / 10;
-        }
-        if (sign == false) {
-            count = count * (-1);
-        }
-        return count;
-    }
-
-    public double toDoubleE() {
-        if (abs(this.toDouble()) > 1.7 * Math.pow(10,
-                308))
-            throw new IllegalArgumentException("Потеря точности");
-        return this.toDouble();
-    }
-
-    public double toDouble() {
-        double count = 0;
-        double tens = Math.pow(10, myIntegralPart.size() - 1);
-        for (int elem : myIntegralPart) {
-            count = elem * tens + count;
-            tens = tens / 10;
-        }
-        for (int elem : myFractionalPart) {
-            count = elem * tens + count;
-            tens = tens / 10;
-        }
-        if (sign == false) {
-            count = count * (-1);
-        }
-        return count;
-    }
-
 
 }
-
