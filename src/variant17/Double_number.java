@@ -233,8 +233,6 @@ public class DecimalNumber{
             }else{
                 forNextPosition = 1;
             }
-//            byte nextDigit = ( index + 1 < len ) ? myMantissa[ index + 1 ] : 0;
-//            if( nextDigit  )
         }
         int offset = 0;
         int mantissaIndex = -1;
