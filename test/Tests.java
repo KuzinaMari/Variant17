@@ -58,7 +58,7 @@ class tests {
     @Tag("Sum")
     void sum() {
         assertTrue( numb( "0.209" ).equals( numb( "0.099" ).sum( numb( "0.11" ) ) ) );
-        assertTrue( m3.equals( m1.sum(m2) ) ); //assertEquals(m3, m1.sum(m2));
+        assertTrue( m3.equals( m1.sum(m2) ) ); 
     }
 
     @Test
